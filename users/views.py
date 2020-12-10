@@ -11,4 +11,5 @@ def register(request):
         password = request.POST.get('password')
         print(f'username : {username}   password: {password}')
         user = User.objects.create(username=username, password=password)
-        return HttpResponse('注册成功')
+        # return HttpResponse('注册成功')
+        return JsonResponse({'message': '注册成功'})
