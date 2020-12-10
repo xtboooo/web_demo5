@@ -1,5 +1,7 @@
 from django.shortcuts import render, HttpResponse, redirect
 from django.http import JsonResponse
+from django.views import View
+
 from users.models import User
 
 
@@ -61,3 +63,31 @@ def user_info(request, id):
             'mobile': user.mobile,
         }
         return JsonResponse(res_data)
+
+
+class LoginView(View):
+    def get(self, request):
+        username = request.session.get('username')
+        if username:
+            return HttpResponse(f'用户{username}已登录')
+            # username = request.COOKIES.get('username', '')
+        return render(request, 'login.html')
+
+    def post(self, request):
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        remember = request.POST.get('remember')
+
+        try:
+            user = User.objects.get(username=username, password=password)
+        except User.DoesNotExist:
+            return JsonResponse({'message': 'login failed'})
+        else:
+            request.session['user_id'] = user.id
+            request.session['username'] = user.username
+            if remember != 'true':
+                request.session.set_expiry(0)
+            response = JsonResponse({'message': 'login success'})
+            # if remember == 'true':
+            #     response.set_cookie('username', username, max_age=14 * 24 * 3600)
+            return response
